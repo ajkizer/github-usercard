@@ -9,10 +9,8 @@
 
 let cards = document.querySelector(".cards");
 axios.get("https://api.github.com/users/ajkizer").then(response => {
-  console.log(response);
   let cardData = response.data;
   let newCard = createCard(cardData);
-  console.log(newCard);
   cards.appendChild(newCard);
 });
 
@@ -38,10 +36,12 @@ axios.get("https://api.github.com/users/ajkizer").then(response => {
 function createCard(data) {
   //create elements
   const card = document.createElement("div");
+  const cardShown = document.createElement("div");
+  card.appendChild(cardShown);
   const img = document.createElement("img");
-  card.appendChild(img);
+  cardShown.appendChild(img);
   const cardInfo = document.createElement("div");
-  card.appendChild(cardInfo);
+  cardShown.appendChild(cardInfo);
   const heading = document.createElement("h3");
   const userName = document.createElement("p");
   const location = document.createElement("p");
@@ -50,25 +50,38 @@ function createCard(data) {
   const followers = document.createElement("p");
   const following = document.createElement("p");
   let bio = document.createElement("p");
+  const calendarDiv = document.createElement("div");
+  const calendar = document.createElement("img");
+  card.appendChild(calendarDiv);
+  calendarDiv.appendChild(calendar);
+  // const btnDiv = document.createElement("div");
+  // const button = document.createElement("span");
+  // btnDiv.appendChild(button);
+  // card.appendChild(btnDiv);
 
   const list = [
     heading,
     userName,
     location,
     profile,
-    profileLink,
     followers,
     following,
     bio
   ];
 
   list.forEach(item => cardInfo.appendChild(item));
+  profile.appendChild(profileLink);
 
   //add classes
   card.classList.add("card");
+  cardShown.classList.add("card-shown");
   cardInfo.classList.add("card-info");
   heading.classList.add("name");
   userName.classList.add("username");
+  calendar.classList.add("calendar");
+  calendarDiv.classList.add("card-hidden");
+  // btnDiv.classList.add("button");
+  // button.classList.add("buttonTxt");
 
   //add content
   img.src = data["avatar_url"];
@@ -76,12 +89,27 @@ function createCard(data) {
   userName.textContent = data["login"];
   location.textContent = data["location"];
   profileLink.href = data["html_url"];
+  profileLink.textContent = data["html_url"];
+  profileLink.target = "_blank";
   followers.textContent = `Followers: ${data["followers"]}`;
   following.textContent = `Following: ${data["following"]}`;
   bio.textContent = data["bio"];
+  calendar.src = `http://ghchart.rshah.org/${data["login"]}`;
+  // button.textContent = "\u2193";
 
   return card;
 }
+
+//get cards from all followers
+axios.get("https://api.github.com/users/ajkizer/followers").then(response => {
+  response.data.forEach(item =>
+    axios.get(`https://api.github.com/users/${item.login}`).then(response => {
+      let cardData = response.data;
+      let newCard = createCard(cardData);
+      cards.appendChild(newCard);
+    })
+  );
+});
 
 /* Step 4: Pass the data received from Github into your function, 
            create a new component and add it to the DOM as a child of .cards
@@ -96,8 +124,6 @@ function createCard(data) {
           Using that array, iterate over it, requesting data for each user, creating a new card for each
           user, and adding that card to the DOM.
 */
-
-const followersArray = [];
 
 /* List of LS Instructors Github username's: 
   tetondan
